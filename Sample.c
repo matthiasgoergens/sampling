@@ -24,16 +24,10 @@ int dropLine () {
   return 1; }
 
 int maximumIndex (int n, unsigned int* a) {
-  int mI = n--;
-  for (; n; n--)
+  int mI = n;
+  while(n--)
     if (a[n] > a[mI]) mI = n;
-  return mI;
-}
-
-void printCorpus (char** lines) {
-  for (; *lines; lines++)
-    printf("%s", *lines);
-}
+  return mI; }
 
 char** sample (int n) {
   char** corpus = calloc(n+1, sizeof(char*));
@@ -48,22 +42,15 @@ char** sample (int n) {
   while (1) {
     unsigned int c = rand ();
     if (corpusR[mI] <= c) {
-      printf (".");
-      if (!dropLine()) return corpus; }
+      if (!dropLine()) { printf("\n"); return corpus; }}
     else {
       printf ("+");
       char* line = readline ();
-      if (!line) return corpus;
+      if (!line) {printf ("\n"); return corpus;}
       corpusR[mI] = c;
       corpus[mI] = line;
       mI = maximumIndex(n, corpusR);
-      printf("\n%i: %i\t", mI, corpusR[mI]);
-      printCorpus(corpus);
-    }
-  }
-  return corpus;
-}
-
+      printf("\n%i: %i\t", mI, corpusR[mI]); } } }
 
 int main (int argc, char** argv) {
   srand(time(0));
@@ -74,5 +61,4 @@ int main (int argc, char** argv) {
   for (char** lines = sample (n); *lines; lines++) {
     printf("%s", *lines);
     free (*lines); }
-  printf("\n");
   exit(0); }
