@@ -38,26 +38,25 @@ char** sample (int n) {
   for (int i = 0; i < n; i++) {
     corpusR[i] = rand (); }
   int mI = maximumIndex (n, corpusR);
-  printf("%i: %i\n", mI, corpusR[mI]);
+  fprintf(stderr,"%i: %i\n", mI, corpusR[mI]);
   while (1) {
     unsigned int c = rand ();
     if (corpusR[mI] <= c) {
-      if (!dropLine()) { printf("\n"); return corpus; }}
+      if (!dropLine()) { fprintf(stderr,"\n"); return corpus; }}
     else {
-      printf ("+");
       char* line = readline ();
-      if (!line) {printf ("\n"); return corpus;}
+      if (!line) {fprintf (stderr, "\n"); return corpus;}
       corpusR[mI] = c;
       corpus[mI] = line;
       mI = maximumIndex(n, corpusR);
-      printf("\n%i: %i\t", mI, corpusR[mI]); } } }
+      fprintf(stderr,"\n%i: %i\t", mI, corpusR[mI]); } } }
 
 int main (int argc, char** argv) {
   srand(time(0));
-  int n = 1;
+  int n = 100;
   if (argc >= 2)
     n = atoi(argv[1]);
-  printf("%i\n", n);
+  fprintf(stderr,"%i\n", n);
   for (char** lines = sample (n); *lines; lines++) {
     printf("%s", *lines);
     free (*lines); }
