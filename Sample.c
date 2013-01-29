@@ -51,7 +51,7 @@ typedef struct {
 } heap_t;
 
 heap_t* full(int n) {
-  fprintf (stderr, ".\n");
+  // fprintf (stderr, ".\n");
   heap_t* h = malloc(sizeof(heap_t));
   h->size = n;
   h->items = calloc(n, sizeof(line_t));
@@ -88,20 +88,20 @@ void bubbleDown (heap_t *h) {
     i = new; } }
 
 heap_t* sample (int n) {
-  fprintf (stderr,"+\n");
+  // fprintf (stderr,"+\n");
   heap_t* h = full(n);
 
   while (1) {
     unsigned int c = rand ();
     if (c < h->items[0].key) {
       // fprintf(stderr, "-\n");
-      fprintf(stderr, "%i\n", c);
+      // fprintf(stderr, "%i\n", c);
 
       if (! readline (h->items)) return h;
       h->items[0].key = c;      
       bubbleDown (h); }
     else if (!dropLine()) {
-      fprintf(stderr, "-\n");
+      // fprintf(stderr, "-\n");
       return h; }}}
 
 void printLines (heap_t* h) {
@@ -112,7 +112,7 @@ void printLines (heap_t* h) {
 int main (int argc, char** argv) {
   srand(time(0));
   int n = argc < 2 ? 1 : atoi(argv[1]);
-  fprintf(stderr,"%i\n", n);
+  // fprintf(stderr,"%i\n", n);
   // Note: This would leak memory, if the programme would run for longer.
   printLines (sample (n));
   exit(0); }
