@@ -1,6 +1,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<time.h>
+#include<assert.h>
 
 int startSize = 160;
 
@@ -29,34 +30,89 @@ int maximumIndex (int n, unsigned int* a) {
     if (a[n] > a[mI]) mI = n;
   return mI; }
 
+// heap!
+
 char** sample (int n) {
   char** corpus = calloc(n+1, sizeof(char*));
   unsigned int* corpusR = calloc(n, sizeof(unsigned int));
-  for (int i = 0; i < n; i++)
-    if (! (corpus[i] = readline())) return corpus;
+  int last = 0;
+  
+  // maximum at root.
+  int up    (int i) { return i ? (n-1) / 2 : i; }
+  int left  (int i) { return 2*n + 1; }
+  int right (int i) { return 2*n + 2; }
+  void add (unsigned int k, char* v) {
+    corpusR[last] = k;
+    corpus[last] = v;
+    int i = last++;
+    while (corpusR[up(i)] < corpusR[i]) {
+      // repair by bubbling up:
+      char* temp = corpus[i];
+      unsigned int tempR = corpusR[i];
+      corpus[i] = corpus[up(i)];
+      corpusR[i] = corpusR[up(i)];
+      corpus[up(i)] = temp;
+      corpusR[up(i)] = tempR;
+      i = up(i); } }
+  void replaceTop (unsigned int k, char* v) {
+    free (corpus[0]);
+    corpusR[0] = k;
+    corpus[0] = v;
+    // bubble down:
+    int i = 0;
+    while (1) {
+      unsigned int ci = corpusR[i];
+      int l = left (i); unsigned int cl = corpusR[l];
+      int r = right (i); unsigned int cr = corpusR[r];
+
+      int new;
+      if ((last <= l) || (cl <= ci))
+        if ((last <= r) || (cr <= ci))
+          break;
+        else new = r;
+      else if (cr < cl)
+        new = l;
+      else new = r;
+
+      unsigned int tempR = corpusR[i];
+      char* temp         = corpus[i];
+      corpusR[i] = corpusR[new];
+      corpus[i]  = corpus[new];
+      corpusR[new] = tempR;
+      corpus[new]  = temp;
+
+      i = new; } }
+
+  int i;
+  for (i = 0; i < n; i++) {
+    char* line = readline();
+    if (!line) {
+      fprintf(stderr, "Early exodus.\n");
+      fprintf(stderr, "%p\n", line);
+      return corpus;
+    }
+    add (rand(), line);
+  }
+  assert (last == i);
+    
   // Consider alias method.
-  for (int i = 0; i < n; i++) {
-    corpusR[i] = rand (); }
-  int mI = maximumIndex (n, corpusR);
-  fprintf(stderr,"%i: %i\n", mI, corpusR[mI]);
+  // fprintf(stderr,"%i: %i\n", mI, corpusR[mI]);
   while (1) {
     unsigned int c = rand ();
-    if (corpusR[mI] <= c) {
-      if (!dropLine()) { fprintf(stderr,"\n"); return corpus; }}
-    else {
+    if (c < corpusR[0]) {
+      fprintf(stderr, "%i\n", c);
       char* line = readline ();
-      if (!line) {fprintf (stderr, "\n"); return corpus;}
-      corpusR[mI] = c;
-      corpus[mI] = line;
-      mI = maximumIndex(n, corpusR);
-      fprintf(stderr,"\n%i: %i\t", mI, corpusR[mI]); } } }
+      if (!line) return corpus;
+      replaceTop (c, line); }
+    else if (!dropLine())
+      return corpus; }}
 
 int main (int argc, char** argv) {
   srand(time(0));
-  int n = 100;
+  int n = 1;
   if (argc >= 2)
     n = atoi(argv[1]);
-  fprintf(stderr,"%i\n", n);
+  // fprintf(stderr,"%i\n", n);
   for (char** lines = sample (n); *lines; lines++) {
     printf("%s", *lines);
     free (*lines); }
