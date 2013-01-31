@@ -86,6 +86,9 @@ void bubbleDown (heap_t *h) {
      
     i = new; } }
 
+/* How about measuring time between picks instead?
+ */
+
 heap_t* sample (int n) {
   // fprintf (stderr,"+\n");
   heap_t* h = full(n);
