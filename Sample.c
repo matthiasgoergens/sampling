@@ -72,11 +72,10 @@ void bubbleDown (heap_t *h) {
   while (1) {
     line_t ci = items[i];
     
-    int l = left (i);  line_t cl = items[l];
-    int r = right (i); line_t cr = items[r];
+    int l = left (i);
+    int r = right (i);
 
-    int new;
-    new = ((size <= r) || (cmpLine(cl, cr) > 0)) ? l : r;
+    int new = ((size <= r) || (cmpLine(items[l], items[r]) > 0)) ? l : r;
     new = ((size <= new) || (cmpLine (ci, items[new]) > 0)) ? i : new;
 
     if (i == new) break;
