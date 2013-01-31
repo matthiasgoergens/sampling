@@ -114,6 +114,7 @@ void printLines (heap_t* h) {
 int main (int argc, char** argv) {
   srand(time(0));
   int n = argc < 2 ? 1 : atoi(argv[1]);
+  if (0>n) n=0;
   // fprintf(stderr,"%i\n", n);
   // Note: This would leak memory, if the programme would run for longer.
   printLines (sample (n));
