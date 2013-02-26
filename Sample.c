@@ -3,6 +3,7 @@
 #include<time.h>
 #include<assert.h>
 #include<limits.h>
+#include<math.h>
 
 int startSize = 160;
 
@@ -36,10 +37,10 @@ int readline (line_t *l) {
   l->line[i++] = 0;
   return 1; }
 
-int dropLine () {
-  if (feof(stdin)) return 0;
+int dropLines (double skip) {
+  if ((skip > 0) && feof(stdin)) return 0;
   int c = 0;
-  while (('\n' != c) && (EOF != (c = getchar())) && c) ;
+  while (('\n' != c) && (skip-- > 0) && (EOF != (c = getchar())) && c) ;
   return 1; }
 
 typedef int cmp_t (void*, void*);
@@ -87,24 +88,90 @@ void bubbleDown (heap_t *h) {
     i = new; } }
 
 /* How about measuring time between picks instead?
+   Would need less randoms.
+
+   c = corpusSize
+   s = # items seen (including current)
+
+   prob. to pick item:
+   p = c / s
+   (really? no. Isn't that the answer for putting the items back?)
+   p = 1 - sum (1 / (s-i)) [0..i-1]
+   actually, yes: p = c / s
+   (It's the probability of being in the first c places
+   in a random shuffle of s items.)
+
+   percentiles!
+   inverted distribution function. (or so.)
+
+   There's Vitter's algorithm Z (see paper)
+   but we can cheat!
+
+   What's the distribution of waiting times until getting a number
+   smaller than the current maximum?  It's an exponential
+   distribution!
+
+   All numbers normalized to [0,1]:
+   max \elem [0,1]
+   
+   prob. we haven't found a new `min-max' until at least step s+i:
+   (1-max) ** i
+
+
+   F^{-1}(x) = - log(x) / a
+   for x in [0,1].
+
+   for x in [0,RAND_MAX]
+
+   - log (x / RAND_MAX) / a
+   gives
+   (log RAND_MAX - log x) / a
+
+   needs floor for exponential -> geometric.
+
+   p = 1 - e**lambda
+   
+   ln (U) / ln (1-p)
+
+   floor $ (log x - log RAND_MAX) / log (1-cmax/RAND_MAX)
+   
+  
  */
 
+// floating point troubles..
 heap_t* sample (int n) {
   // fprintf (stderr,"+\n");
   heap_t* h = full(n);
 
   while (1) {
     unsigned int c = rand ();
-    if (c < h->items[0].key) {
+    if (c) {
+      int key = h->items[0].key;
+      fprintf(stderr, "key: %i\t", key);
+      if (key < RAND_MAX) {
+        double p = key / (double) RAND_MAX;
+        double cc = c / (double) RAND_MAX;
+        fprintf(stderr, "p: %f", p);
+        double skip =  ( log (cc) / log (1 - p));
+        fprintf (stderr, "\tskip: %f\t", skip);
+        if (!dropLines(skip)) {
+          // fprintf(stderr, "-\n");
+          return h; }}
+        
+      int rand_max = RAND_MAX - (RAND_MAX % key);
+      do { c = rand ();
+      } while (c > rand_max);
+      c %= key;
+      fprintf (stderr, "\tc: %i\t", c);
+      fprintf (stderr, "rand_max: %i", rand_max);
+
       // fprintf(stderr, "-\n");
       // fprintf(stderr, "%i\n", c);
-
+      fprintf(stderr,"\n");
       if (! readline (h->items)) return h;
       h->items[0].key = c;      
-      bubbleDown (h); }
-    else if (!dropLine()) {
-      // fprintf(stderr, "-\n");
-      return h; }}}
+      bubbleDown (h); }}}
+
 
 void printLines (heap_t* h) {
   for(int i = 0; i < h->size; i++) {
@@ -115,7 +182,7 @@ int main (int argc, char** argv) {
   srand(time(0));
   int n = argc < 2 ? 1 : atoi(argv[1]);
   if (0>n) n=0;
-  // fprintf(stderr,"%i\n", n);
+  fprintf(stderr,"%i\n", n);
   // Note: This would leak memory, if the programme would run for longer.
   printLines (sample (n));
   exit(0); }
